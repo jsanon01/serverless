@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>AWS CLI Serverless</title>
+  <link rel="stylesheet" type="text/css" href="style.css">
+</head>
+<body>
+
+<nav id="navbar">
+  <header>AWS CLI Serverless</header>
+  <ul> 
+    <a class="nav-link" href="#vpc_command" rel="internal"><li>Create VPC</li></a>
+    <a class="nav-link" href="#subnet_command" rel="internal"><li>Create Subnet</li></a>
+    <a class="nav-link" href="#igw_command" rel="internal"><li>Create Internet Gateway</li></a>
+    <a class="nav-link" href="#eip_command" rel="internal"><li>Create Elastic IP</li></a>
+    <a class="nav-link" href="#nat_gateway_command" rel="internal"><li>Create NAT Gateway</li></a>
+    <a class="nav-link" href="#rt_command" rel="internal"><li>Create Route Tables</li></a>
+    <a class="nav-link" href="#internet_routes" rel="internal"><li>Adding Internet Routes</li></a>
+    <a class="nav-link" href="#rt_associations" rel="internal"><li>Route Table Associations</li></a>
+    <a class="nav-link" href="#sg_command" rel="internal"><li>Create Security Groups</li></a>
+    <a class="nav-link" href="#sg_rule_commands" rel="internal"><li>Adding Rules to Security Group</li></a>
+    <a class="nav-link" href="#key_pairs_commands" rel="internal"><li>Create Key-Pairs</li></a>
+    <a class="nav-link" href="#ec2_command" rel="internal"><li>Create EC2 instance</li></a>
+    <a class="nav-link" href="#ssh_commands" rel="internal"><li>SSH to newly EC2</li></a>
+    <a class="nav-link" href="#apache_command" rel="internal"><li>Apache Installation</li></a>
+    <a class="nav-link" href="#Reference" rel="internal"><li>Reference</li></a>
+  </ul>
+</nav>
+<main id="main-doc">
+  <section class="main-section" id="vpc_command">
+    <h1><i>The following commands are used via CLI</i></h1>
+    <header>Create VPC</header>
+    <article>  
+      <p>Command &larr; aws ec2 create-vpc --cidr-block 10.0.0.0/16</p>
+      <p>Tagging &larr; aws ec2 create-tags  --resources vpc-xxxx  --tags Key=Name, Value=CLI-VPC</p>
+
+     </artice>
+    </section>
+  
+    </section>
+  <section class="main-section" id="subnet_command">
+    <header>Create Subnets</header>
+    <article>
+      <center>********************************* Creating Public Subnet ************************************</center>
+    <p>Command &larr; aws ec2 create-subnet --vpc-id vpc-xxxx  --cidr-block 10.0.1.0/24</p>
+    <p>Tagging &larr; aws ec2 create-tags  --resources subnet-xxxx  --tags Key=Name, Value=CLI-<b>Public-Subnet</b></p>
+        <center>********************************* Creating Public Subnet ************************************</center>
+    <p>Command &larr; aws ec2 create-subnet --vpc-id vpc-xxxx  --cidr-block 10.0.2.0/24</p>
+    <p>Tagging &larr; aws ec2 create-tags  --resources subnet-xxxx  --tags Key=Name, Value=CLI-<b>Private-Subnet</b></p>
+
+</article>
+</section>
+  <section class="main-section" id="igw_command">
+    <header>Creating Internet Gateway</header>
+    <article> 
+      <p>Command &larr; aws ec2 create-internet-gateway</p>
+      <p>Tagging &larr; aws ec2 create-tags  --resources igw-xxxx  --tags Key=Name, Value=CLI-Internet-Gateway</p>
+          <center>********************************* Attach Internet Gateway ************************************</center>
+          <p>Attach IGW &larr; aws ec2 attach-internet-gateway --internet-gateway-id igw-xxxx --vpc-id vpc-xxx</p>
+    </article>
+    </section>
+  <section class="main-section" id="eip_command">
+    <header>Creating Elastic IP</header>
+    <article>
+      <p>Allocating EIP &larr; aws ec2 allocate-address --domain vpc</p>
+    </article>
+   
+    </section>
+  <section class="main-section" id="nat_gateway_command">
+    <header>Create NAT Gateway</header>
+    <article>
+       <p>Command &larr; aws ec2 create-nat-gateway --subnet-id subnet-(Public subnet) --allocation-id eipalloc-xxxx</p>
+      <p>Tagging &larr; aws ec2 create-tags --resources nat-ID --tags Key=Name, Value=NATGATEWAY</p>
+    </article>
+    </section>
+    <section class="main-section" id="rt_command">
+        <!-- <header>What to expect from AWS CSA</header> -->
+        <header>Create Route Tables</header>
+        <article>
+                <center>********************************* Creating Public Route Table ************************************</center>
+
+      <p>Command &larr; aws ec2 create-route-table  --vpc-id vpc-xxxx (PUBLIC ROUTE)</p>
+      <p>Tagging &larr; aws ec2 create-tags  --resources rtb-xxxx  --tags Key=Name, Value=CLI-Public-Route</p>
+      <center>********************************* Creating Private Route Table ************************************</center>
+      <p>Command &larr; aws ec2 create-route-table – vpc-id vpc-xxxx <b>(PRIVATE ROUTE)</b></p>
+      <p>Tagging &larr; aws ec2 create-tags  --resources rtb-xxxx  --tags Key=Name, Value=CLI-<b>Private-Route</b></p>
+    </article>
+  <section class="main-section" id="internet_routes">
+    <header>Adding Internet Routes</header>
+    <article>
+      <ul>
+        <li>Adding Internet Route for Public Subnet
+          <p>Command &larr; aws ec2 create-route --route-table-id rtb-<b>(Public Route)</b> --destination-cidr-block 0.0.0.0/0 --gateway-id igw-xxxx</p>
+        </li>
+        <li>Adding Internet Route for Private Subnet via NAT Gateway
+          <p>Command &larr; aws ec2 create-route --route-table-id rtb-<b>(Private Route)</b> --destination-cidr-block 0.0.0.0/0  --gateway-id nat-xxxx (NAT Gateway)</p>
+        </li>
+      </ul>
+    </article>
+    </section>
+  <section class="main-section" id="rt_associations">
+    <header>Associate Route Tables to Subnets</header>
+    <article>
+      <ul>
+        <li>Associating Route Table to Public Subnet
+          <p>Command &larr; aws ec2 associate-route-table --rtb-id rtb-(Public route) --subnet-id subnet-<b>(Public subnet)</b></p>
+        </li>
+        <li>Associating Route Table to Private Subnet
+          <p>Command &larr; aws ec2 associate-route-table --rtb-id rtb-(Public route) --subnet-id subnet-<b>(Private subnet)</b></p>
+        </li>
+      </ul>
+    </article>
+    </section>
+    <section class="main-section" id="sg_command">
+    <header>Create Security Groups</header>
+    <article>
+      <center>********************************* Creating SG for Public Subnet ************************************</center>
+    <p>Command &larr; aws ec2 create-security-group --group-name CLI-WEBSecurityGroup --description “Web Security Group” --vpc-id vpc-xxxx</p>
+      <p>Tagging &larr; aws ec2 create-tags --resources sg-xxxx --tags Key=Name, Value=CLI-Web-Security-Group</p>
+        <p><i>P.S. Security Groups are stateful which means that  all outbounds are allowed by default.</i></p>
+        <center>********************************* Creating SG for Public Subnet ************************************</center>
+        <p>Command &larr; aws ec2 create-security-group --group-name CLI-DBSecurityGroup --description “DB Security Group” --vpc-id vpc-xxxx</p>
+      <p>Tagging &larr; aws ec2 create-tags --resources sg-xxxx --tags Key=Name, Value=CLI-DB-Security-Group</p>
+        <p><i>P.S. Security Groups are stateful which means that  all outbounds are allowed by default.</i></p>
+    </article>
+    </section>
+  <section class="main-section" id="sg_rule_commands">
+    <header>Adding Rules to Security Group</header>
+    <article>
+    <ul>
+      <li><b>SSH rule for Port 22</b><br>Command &larr; aws ec2 authorize-security-group-ingress --group-id sg-xxxx (for Public Subnet) --protocol tcp --port 22  --cidr 0.0.0.0/0</li>
+      <li><b>Web server rule for Port 80</b><br>Command &larr; aws ec2 authorize-security-group-ingress --group-id sg-xxxx (for Public Subnet) --protocol tcp --port 80 --cidr 0.0.0.0/0</li>
+      </ul>
+    </article>
+    </section>
+  <section class="main-section" id="key_pairs_commands">
+    <header>Creating Key-Pairs</header>
+    <article>
+      <p>Command &larr; aws ec2 create-key-pair --key-name [XXXXXSANON] </p>
+      <p>PS. Notepad text will display &larr; to copy content inside the double quotes ""<br>
+        “- - - Begin jcjcidsiosoaoaksdnszmao RSA Private Key - - - -” <br>
+          Creating 2nd key-pair &larr; aws ec2 create-key-pair -- key-name MYCLIKEY123   -- query  “Key Material” -- output text > MYCLIKEY123 <br>
+          Optional command &larr; cat MYCLIKEY123
+</p>
+
+    </article>
+    </section>
+  <section class="main-section" id="ec2_command">
+    <header>Create EC2 instance</header>
+    <article>
+      <p>Command &larr; it is a one-line path<br> aws ec2 run-instances --image-id ami-(Amazon-Linux) --count 1 (Number of  
+instances) --instance-type t2.micro (<b>default</b>) --key-name MYCLIKEY123 --security-group-id(s) sg-(for <b>public subnet</b>) --subnet-id subnet-(<b>Public subnet</b>)  --associate-public-ip-address (<b>mandatory for public IP</b>)</p>
+<p>Tagging &larr;   aws ec2 create-tags --resources i-(EC2 instance ID)  --tags Key=Name, Value=CLI-WEBSERVER</p>
+    </article>
+    </section>
+  <section class="main-section" id="ssh_commands">
+    <header>SSH to newly EC2 instance</header>
+    <article>
+    <ul>
+      <li>ssh ec2-user@public-ip -i MYCLIKEY123</li>
+      <li>chmod 400 MYCLIKEY123</li>
+      <li>ssh ec2-user@public-ip -i MYCLIKEY123</li>
+      <li> [ec2-user@private-ip] $</li>
+    </ul>
+    </article>
+    </section>
+  <section class="main-section" id="apache_command">
+    <header>Installing Apache web server</header>
+    <article> 
+      <p><u>Commands</u><br>
+        sudo yum install httpd -y<br>
+        sudo service httpd start<br>
+        cd /var/www/html<br>
+        ls <br>
+        Echo “<h1> Hello this is a web server I just created with CLI for VPC, Subnets, IGW, Route tables, and so on…</h1>” <br>
+        sudo su echo “h1 ……/h1”
+        Copy Public IP and Paste it into the browser...
+</p>
+    </article>
+    </section>
+  <section class="main-section" id="Reference">
+    <header>Reference</header>
+    <article>
+      <li>All the documentation in this page is taken from <a href="https://www.amazon.com/Certified-Solutions-Architect-Associate-SAA-C01/dp/1260108279/ref=pd_lpo_sbs_14_img_1?_encoding=UTF8&psc=1&refRID=G5B36D0FAEFV8FSJRE69" target="_blank"> <img src="all-in-one.jpg" alt="all-in-one book" style="width:42px; height:42px; border:0;"> ALL-IN-ONE</a>
+    </article>
+    </section>
+</main>
+</body>
+</html>
