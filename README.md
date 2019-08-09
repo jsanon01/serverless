@@ -1,3 +1,3 @@
 # serverless
 
-serverless demo website
+it is all about using commands from CLI.
